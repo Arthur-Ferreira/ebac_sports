@@ -1,11 +1,12 @@
+import { useDispatch, useSelector } from 'react-redux'
 import { Produto as ProdutoType } from '../../App'
-import * as S from './styles'
+import { favoritar } from '../../slice/favoritoSlice'
+import { addToCart } from '../../slice/carrinhoSlice'
+import * as GlobalStyles from './styles'
+import { RootState } from '../../store'
 
 type Props = {
   produto: ProdutoType
-  aoComprar: (produto: ProdutoType) => void
-  favoritar: (produto: ProdutoType) => void
-  estaNosFavoritos: boolean
 }
 
 export const paraReal = (valor: number) =>
@@ -13,30 +14,42 @@ export const paraReal = (valor: number) =>
     valor
   )
 
-const ProdutoComponent = ({
-  produto,
-  aoComprar,
-  favoritar,
-  estaNosFavoritos
-}: Props) => {
+const ProdutoComponent = ({ produto }: Props) => {
+  const dispatch = useDispatch()
+
+  const favoritos = useSelector((state: RootState) => state.favorito)
+
+  const produtoEstaNosFavoritos = (produto: ProdutoType) => {
+    const produtoId = produto.id
+    const IdsDosFavoritos = favoritos.map((fav) => fav.id)
+
+    return IdsDosFavoritos.includes(produtoId)
+  }
+
   return (
-    <S.Produto>
-      <S.Capa>
+    <GlobalStyles.Produto>
+      <GlobalStyles.Capa>
         <img src={produto.imagem} alt={produto.nome} />
-      </S.Capa>
-      <S.Titulo>{produto.nome}</S.Titulo>
-      <S.Prices>
+      </GlobalStyles.Capa>
+      <GlobalStyles.Titulo>{produto.nome}</GlobalStyles.Titulo>
+      <GlobalStyles.Prices>
         <strong>{paraReal(produto.preco)}</strong>
-      </S.Prices>
-      <S.BtnComprar onClick={() => favoritar(produto)} type="button">
-        {estaNosFavoritos
+      </GlobalStyles.Prices>
+      <GlobalStyles.BtnComprar
+        onClick={() => dispatch(favoritar(produto))}
+        type="button"
+      >
+        {produtoEstaNosFavoritos(produto)
           ? '- Remover dos favoritos'
           : '+ Adicionar aos favoritos'}
-      </S.BtnComprar>
-      <S.BtnComprar onClick={() => aoComprar(produto)} type="button">
+      </GlobalStyles.BtnComprar>
+      <GlobalStyles.BtnComprar
+        onClick={() => dispatch(addToCart(produto))}
+        type="button"
+      >
         Adicionar ao carrinho
-      </S.BtnComprar>
-    </S.Produto>
+      </GlobalStyles.BtnComprar>
+    </GlobalStyles.Produto>
   )
 }
 
